@@ -11,9 +11,9 @@ def plot_spend_vs_points(csv_filename, start_season, end_season): #will eventual
     season_range = data[(data["Season"] >= start_season) & (data["Season"] <= end_season)]
     season_range["Yearly_Spending"] = -season_range["Net_transfers"] + (season_range["Wages (weekly)"] * 52)
 
-    total_data = season_range.groupby("Team").agg({ #averages values over selected seasons
-        "Yearly_Spending": "sum",
-        "Points": "sum",
+    total_data = season_range.groupby("Team").agg({
+        "Yearly_Spending": "sum", #sums spending over season
+        "Points": "mean", #averages points over season
     }).reset_index()
 
     #data["Yearly_Spending"] = -data["Net_transfers"] + (data["Wages (weekly)"] * 52) #Combines transfer spending and weekly wages into yearly spending
@@ -28,24 +28,32 @@ def plot_spend_vs_points(csv_filename, start_season, end_season): #will eventual
         )
     adjust_text(texts, arrowprops=dict(arrowstyle="-", color="gray")) #Uses AdjustText to make labels readable
     plt.xlabel("Total Yearly Spend (€M) Across Seasons")
-    plt.ylabel("Total League Points Across Seasons")
+    plt.ylabel("Average League Points Across Seasons")
     plt.title(f"EPL {start_season}-{end_season}: Spending vs. Points")
     plt.grid(True)
     plt.show()
 
-def plot_squadval_vs_points(csv_filename, title):
+def plot_squadval_vs_points(csv_filename, start_season, end_season):
     '''Plots squad value compared to points'''
     data = pd.read_csv(csv_filename)
     data.columns = data.columns.str.strip()
-    print(data.head())
+    data["Season"] = data["Season"].astype(int)
+
+    season_range = data[(data["Season"] >= start_season) & (data["Season"] <= end_season)]
+    averaged = season_range.groupby("Team").agg({
+        "Squad_value": "mean",
+        "Points": "mean"
+    }).reset_index()
 
     plt.figure(figsize=(14,7))
-    plt.scatter(data["Squad_value"], data["Points"])
-    for i, row in data.iterrows():
-        plt.text(row["Squad_value"] + 1, row["Points"], row["Team"], fontsize=8)
-    plt.xlabel("Squad Value (€M)")
-    plt.ylabel("League Points")
-    plt.title(title)
+    plt.scatter(averaged["Squad_value"], averaged["Points"])
+    texts = []
+    for i, row in averaged.iterrows():
+        texts.append(plt.text(row["Squad_value"] + 1, row["Points"], row["Team"], fontsize=8))
+    adjust_text(texts, arrowprops=dict(arrowstyle="-", color="gray")) #Uses AdjustText to make labels readable
+    plt.xlabel("Average Squad Value (€M)")
+    plt.ylabel("Average League Points")
+    plt.title(f"EPL {start_season}-{end_season}: Squad Value vs. Points")
     plt.grid(True)
     plt.show()
 
@@ -60,4 +68,4 @@ To do list:
     - tbd
 '''
 
-plot_spend_vs_points("EPL_Data.csv", 2020, 2023)
+plot_squadval_vs_points("EPL_Data.csv", 2020, 2023)
