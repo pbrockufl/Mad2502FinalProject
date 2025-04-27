@@ -10,15 +10,18 @@ class LeagueAnalyzer:
         self.models = {}
 
     def filter_seasons(self, start_season, end_season):
+        '''filters season range'''
         self.filtered_data = self.data[
             (self.data["Season"] >= start_season) & (self.data["Season"] <= end_season)].copy()
         self.start_season = start_season
         self.end_season = end_season
 
     def compute_yearly_spending(self):
+        '''Calculates a club's yearly spending'''
         self.filtered_data["Yearly_Spending"] = -self.filtered_data["Net_transfers"] + (self.filtered_data["Wages (weekly)"] * 52)
 
     def plot_spend_vs_points(self):
+        '''Plots yearly spending compared to points earned for a season'''
         self.compute_yearly_spending()
 
         #Sum spending and average points
@@ -67,6 +70,7 @@ class LeagueAnalyzer:
         plt.show()
 
     def plot_squadval_vs_points(self):
+        '''Plots squad value compared to points'''
         averaged = self.filtered_data.groupby("Team").agg({
             "Squad_value":"mean",
             "Points":"mean"
@@ -140,4 +144,20 @@ class LeagueAnalyzer:
         plt.grid(True, axis="y")
         plt.tight_layout()
         plt.show()
+
+    def predict_points_from_spend(self, spend_amount):
+        '''Predicts points based on spending from model'''
+        if "spending" not in self.models:
+            print("Run plot_spend_vs_points() first.")
+            return None
+        prediction = self.models["spending"].predict([[spend_amount]])[0]
+        return prediction
+
+    def predict_points_from_squad_value(self, squad_value):
+        '''Predicts points based on squad value from model'''
+        if "squad_value" not in self.models:
+            print("Run plot_squadval_vs_points() first.")
+            return None
+        prediction = self.models["squad_value"].predict([[squad_value]])[0]
+        return prediction
 
