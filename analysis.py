@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from adjustText import adjust_text
 from sklearn.linear_model import LinearRegression
-import numpy as np
 
 def plot_spend_vs_points(csv_filename, start_season, end_season): #will eventually change to title automatically
     '''Plots yearly spending compared to points earned for a season'''
@@ -43,7 +42,8 @@ def plot_spend_vs_points(csv_filename, start_season, end_season): #will eventual
     #equation
     slope = model.coef_[0]
     intercept = model.intercept_
-    equation = f"Points = {slope:.2f} * Spending + {intercept:.2f}"
+    r2 = model.score(x,y)
+    equation = f"Points = {slope:.2f} * Spending + {intercept:.2f}\nr^2 = {r2:.4f}"
     plt.text(
         0.05, 0.95, equation,
         transform=plt.gca().transAxes,
@@ -51,6 +51,7 @@ def plot_spend_vs_points(csv_filename, start_season, end_season): #will eventual
         verticalalignment = "top",
         bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white")
     )
+
     #Decorations
     plt.xlabel("Total Yearly Spend (€M) Across Seasons")
     plt.ylabel("Average League Points Across Seasons")
@@ -86,14 +87,13 @@ def plot_squadval_vs_points(csv_filename, start_season, end_season):
     model = LinearRegression()
     model.fit(x,y)
     predictions = model.predict(x)
-
+    #plot regression
     plt.plot(averaged["Squad_value"], predictions, color="blue", linestyle="--", label="Regression Line")
-
-    #Coeffs
+    #equation
     slope = model.coef_[0]
     intercept = model.intercept_
-
-    equation = f"Points = {slope:.2f} * Squad Value + {intercept:.2f}"
+    r2 = model.score(x,y)
+    equation = f"Points = {slope:.2f} * Squad Value + {intercept:.2f}\nr^2 = {r2:.4f}"
     plt.text(
         0.05, 0.95, equation,
         transform=plt.gca().transAxes,
@@ -109,15 +109,39 @@ def plot_squadval_vs_points(csv_filename, start_season, end_season):
     plt.grid(True)
     plt.show()
 
+def compare_power_points(csv_filename):
+    '''Compares power points of EPL clubs vs clubs from other top 5 leagues'''
+    data = pd.read_csv(csv_filename)
+    data.columns = data.columns.str.strip()
+
+    #Group leagues
+    league_avg = data.groupby("League")["Power_points"].mean().sort_values(ascending=False)
+    colors = {
+        "EPL": "purple",
+        "La Liga": "yellow",
+        "Bundesliga": "red",
+        "Serie A": "green",
+        "Ligue 1": "blue"
+    }
+
+    graph_colors = [colors.get(league,"gray") for league in league_avg.index]
+    #plot
+    plt.figure(figsize=(10,6))
+    bars = plt.bar(league_avg.index, league_avg.values, color=graph_colors, edgecolor= "black")
+
+    #Labels
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2, height + 0.01, f"{height:.2f}",
+                 ha="center", va="bottom", fontsize=10)
+
+    #Decorations
+    plt.ylabel("Average Power Points")
+    plt.title("Average Power Points across Top 5 Leagues")
+    plt.xticks(rotation=45)
+    plt.grid(True, axis="y")
+    plt.tight_layout()
+    plt.show()
 
 
-'''
-To do list:
-    - Add data from more seasons
-    - Create financial power score (normalize financial metrics and add)
-    - Linear regressions for comparisons over seasons
-    - pts return on squad value
-    - tbd
-'''
 
-plot_spend_vs_points("EPL_Data.csv", 2020, 2023)
