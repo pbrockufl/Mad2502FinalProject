@@ -10,5 +10,5 @@ EPL_analyzer.predict_points_from_squad_value(1000)  # Predict points with 1B squ
 
 # Europe-wide analysis
 Top5_analyzer = LeagueAnalyzer("Top_5_Data.csv")
-Top5_analyzer.compare_league_power_points()
-Top5_analyzer.compare_spending_power_in_ucl("Premier League", "La Liga")
+Top5_analyzer.compare_power_points()
+Top5_analyzer.compare_spending_power("EPL", "La Liga")

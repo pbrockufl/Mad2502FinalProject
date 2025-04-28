@@ -28,7 +28,7 @@ class LeagueAnalyzer:
         total_data = self.filtered_data.groupby("Team").agg({
             "Yearly_Spending": "sum",
             "Points": "mean"
-        })
+        }).reset_index()
         # Scatterplot
         plt.figure(figsize=(14, 7))  # Adjusts size
         plt.scatter(total_data["Yearly_Spending"], total_data["Points"])
