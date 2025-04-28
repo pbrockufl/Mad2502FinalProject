@@ -7,7 +7,7 @@ class LeagueAnalyzer:
     def __init__(self, csv_file):
         self.data = pd.read_csv(csv_file)
         self.data.columns = self.data.columns.str.strip()
-        self.models = {}
+        self.models = {} #Dictionary that stores models
 
     def filter_seasons(self, start_season, end_season):
         '''filters season range'''
@@ -51,12 +51,12 @@ class LeagueAnalyzer:
         plt.plot(total_data["Yearly_Spending"], prediction, color="blue", linestyle="--", label="Regression Line")
         # equation
         slope = model.coef_[0]
-        intercept = model.intercept_
-        r2 = model.score(x, y)
+        intercept = model.intercept_ # Y intercept
+        r2 = model.score(x, y) # Represents correlation
         equation = f"Points = {slope:.2f} * Spending + {intercept:.2f}\nr^2 = {r2:.4f}"
         plt.text(
             0.05, 0.95, equation,
-            transform=plt.gca().transAxes,
+            transform=plt.gca().transAxes, # Everything placed inside axes
             fontsize=12,
             verticalalignment="top",
             bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white")
@@ -148,7 +148,7 @@ class LeagueAnalyzer:
     def predict_points_from_spend(self, spend_amount):
         '''Predicts points based on spending from model'''
         if "spending" not in self.models:
-            print("Run plot_spend_vs_points() first.")
+            print("Run plot_spend_vs_points() first.") # Warns if model not available
             return None
         prediction = self.models["spending"].predict([[spend_amount]])[0]
         return prediction
