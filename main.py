@@ -1,7 +1,14 @@
-from analysis import analyze_net_spend_vs_success
+from LeagueAnalyzer import LeagueAnalyzer
 
-def main():
-    analyze_net_spend_vs_success("data/Final Project - Sheet1.csv")
+# Premier League analysis
+EPL_analyzer = LeagueAnalyzer("EPL_Data.csv")
+EPL_analyzer.filter_seasons(2020, 2023)
+EPL_analyzer.plot_spend_vs_points()
+EPL_analyzer.plot_squadval_vs_points()
+EPL_analyzer.predict_points_from_spend(500)  # Predict points if spending 500M
+EPL_analyzer.predict_points_from_squad_value(1000)  # Predict points with 1B squad value
 
-if __name__ == "__main__":
-    main()
+# Europe-wide analysis
+Top5_analyzer = LeagueAnalyzer("Top_5_Data.csv")
+Top5_analyzer.compare_league_power_points()
+Top5_analyzer.compare_spending_power_in_ucl("Premier League", "La Liga")
