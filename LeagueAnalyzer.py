@@ -161,3 +161,71 @@ class LeagueAnalyzer:
         prediction = self.models["squad_value"].predict([[squad_value]])[0]
         return prediction
 
+    def compare_spending_power(self, league1, league2):
+        '''Compares net spend and UCL points between two leagues'''
+        #Filter out teams not in UCL and leagues
+        filtered = self.data[self.data["UCL Points"] > 0].copy()
+        data1 = filtered[filtered["League"] == league1]
+        data2 = filtered[filtered["League"] == league2]
+
+        #Scatterplot
+        plt.figure(figsize=(14, 7))
+        plt.scatter(data1["Net Spend (€M)"], data1["UCL Points"], color = "blue", label=league1, edgecolor="black")
+        plt.scatter(data2["Net Spend (€M)"], data1["UCL Points"], color = "red", label=league2, edgecolor="black")
+
+        #League 1 Regression
+        x1 = data1["Net Spend (€M)"].values.reshape(-1,1)
+        y1 = data1["UCL Points"].values
+        model1 = LinearRegression()
+        model1.fit(x1, y1)
+        prediction1 = model1.predict(x1)
+        plt.plot(data1["Net Spend (€M)"], prediction1, color="blue", linestyle="--")
+
+        #League 2 Regression
+        x2 = data2["Net Spend (€M)"].values.reshape(-1, 1)
+        y2 = data2["UCL Points"].values
+        model2 = LinearRegression()
+        model2.fit(x2, y2)
+        prediction1 = model1.predict(x2)
+        plt.plot(data2["Net Spend (€M)"], prediction1, color="red", linestyle="--")
+
+        #Equation
+        slope1 = model1.coef_[0]
+        intercept1 = model1.intercept_
+        r2_1 = model1.score(x1, y1)
+
+        slope2 = model2.coef_[0]
+        intercept2 = model2.intercept_
+        r2_2 = model2.score(x2, y2)
+
+        eq1 = f"{league1}: y = {slope1:.2f}x + {intercept1:.2f}\nr^2 = {r2_1:.4f}"
+        eq2 = f"{league2}: y = {slope2:.2f}x + {intercept2:.2f}\nr^2 = {r2_2:.4f}"
+
+        plt.text(0.05, 0.95, eq1,
+            transform=plt.gca().transAxes,
+            fontsize=12,
+            verticalalignment="top", color ="blue",
+            bbox=dict(boxstyle="round,pad=0.3", edgecolor="blue", facecolor="white"))
+        plt.text(0.05, 0.75, eq2,
+            transform=plt.gca().transAxes,
+            fontsize=12,
+            verticalalignment="top", color = "red",
+            bbox=dict(boxstyle="round,pad=0.3", edgecolor="red", facecolor="white"))
+        #Results
+        print(f"{league1}: slope = {slope1:.4f}, r^2 = {r2_1:.4f}")
+        print(f"{league2}: slope = {slope2:.4f}, r^2 = {r2_2:.4f}")
+
+        if slope1 > slope2:
+            print(f"Spending is more powerful in {league1}.")
+        else:
+            print(f"Spending is more powerful in {league2}.")
+
+        #Decorations
+        plt.xlabel("Net Transfer Spend (€M)")
+        plt.ylabel("UCL Points")
+        plt.title(f"Spending vs UCL Success: {league1} vs {league2}")
+        plt.legend
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
